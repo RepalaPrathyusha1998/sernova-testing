@@ -3,10 +3,16 @@ package com.sernova.web;
 import com.sernova.domain.Address;
 import com.sernova.domain.Person;
 import com.sernova.domain.PersonRepository;
+import com.sernova.dto.PersonDto;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -31,10 +37,38 @@ public class ApiController {
     public ResponseEntity<List<Person>> persons() {
         return ResponseEntity.ok(personRepository.findAll());
     }
+    
+    @GetMapping("/persons-with-addresses-initial")
+    public ResponseEntity<List<Person>> personsWithAddressesInitial() {
+     return ResponseEntity.ok(personRepository.findAll());
+    }
 
     @GetMapping("/persons-with-addresses")
     public ResponseEntity<List<Person>> personsWithAddresses() {
-        return ResponseEntity.ok(personRepository.findAll());
+     // use repository method that performs a join-fetch to load addresses in one query
+     return ResponseEntity.ok(personRepository.findAllWithAddresses());
+    }
+    
+    @GetMapping("/persons-with-addresses-dto")
+    public ResponseEntity<List<PersonDto>> personsWithAddressesDto() {
+        return ResponseEntity.ok(personRepository.findAllAsDto());
+    }
+    
+    @GetMapping("/persons-page")
+    public ResponseEntity<Page<Person>> getPersonsPage(@RequestParam(defaultValue = "0") int page,
+                                                       @RequestParam(defaultValue = "500") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(personRepository.findAll(pageable));
+    }
+    
+    @GetMapping("/persons-graph")
+    public ResponseEntity<List<Person>> getPersonsWithGraph() {
+        return ResponseEntity.ok(personRepository.findAllWithAddressesGraph());
+    }
+    
+    @GetMapping("/persons-with-cache")
+    public ResponseEntity<List<Person>> getPersonsWithCache() {
+        return ResponseEntity.ok(personRepository.findAllWithAddressesCached());
     }
 
     @PostMapping("/seed/people")
